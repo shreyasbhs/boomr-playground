@@ -149,8 +149,8 @@
         document.head.appendChild(rulesScript);
       }
 
-      rulesScript.textContent = JSON.stringify({
-        prerender: [  {
+      rulesScript.textContent = `
+        "prerender": [  {
         "where": {
           "and": [
             { "href_matches": "/prerender/overview" },
@@ -159,8 +159,7 @@
             ]
         }
       }
-    ]
-      });
+    ]`
 
       window.dispatchEvent(new CustomEvent("speculation-rules-status", {
         detail: { installed: true, supported: true, targets: targets }
