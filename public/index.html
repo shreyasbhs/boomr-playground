@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Boomerang Performance Playground</title>
   <link rel="stylesheet" href="/css/style.css">
+  <script id="dynamic-speculation-rules" type="application/speculationrules">
+    {
+      "prefetch": [{ "source": "list", "urls": ["/prerender/overview", "/prerender/metrics", "/prerender/network"] }],
+      "prerender": [{ "source": "list", "urls": ["/prerender/overview", "/prerender/metrics", "/prerender/network"] }]
+    }
+  </script>
 </head>
 <body>
 
@@ -126,19 +132,18 @@
         return;
       }
 
-      const existing = document.getElementById("dynamic-speculation-rules");
-      if (existing) {
-        existing.remove();
+      let rulesScript = document.getElementById("dynamic-speculation-rules");
+      if (!rulesScript) {
+        rulesScript = document.createElement("script");
+        rulesScript.id = "dynamic-speculation-rules";
+        rulesScript.type = "application/speculationrules";
+        document.head.appendChild(rulesScript);
       }
 
-      const rulesScript = document.createElement("script");
-      rulesScript.id = "dynamic-speculation-rules";
-      rulesScript.type = "application/speculationrules";
       rulesScript.textContent = JSON.stringify({
         prefetch: [{ source: "list", urls: targets }],
         prerender: [{ source: "list", urls: targets }]
       });
-      document.head.appendChild(rulesScript);
 
       window.dispatchEvent(new CustomEvent("speculation-rules-status", {
         detail: { installed: true, supported: true, targets: targets }
