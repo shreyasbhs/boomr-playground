@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Boomerang Performance Playground</title>
   <link rel="stylesheet" href="/css/style.css">
-  <script id="dynamic-speculation-rules" type="application/speculationrules">
+  <script id="dynamic-speculation-rules" type="speculationrules">
     {
       "prefetch": [{ "source": "list", "urls": ["/prerender/overview", "/prerender/metrics", "/prerender/network"] }],
       "prerender": [{ "source": "list", "urls": ["/prerender/overview", "/prerender/metrics", "/prerender/network"] }]
@@ -136,7 +136,7 @@
       if (!rulesScript) {
         rulesScript = document.createElement("script");
         rulesScript.id = "dynamic-speculation-rules";
-        rulesScript.type = "application/speculationrules";
+        rulesScript.type = "speculationrules";
         document.head.appendChild(rulesScript);
       }
 
