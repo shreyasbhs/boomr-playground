@@ -544,7 +544,6 @@
         document.head.appendChild(rulesScript);
       }
       rulesScript.textContent = JSON.stringify({
-        prefetch: [{ source: "list", urls: targets }],
         prerender: [{ source: "list", urls: targets }],
       });
 
