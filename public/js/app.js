@@ -494,6 +494,13 @@
   function bindSpeculationPrerender() {
     const applyBtn = document.getElementById("sp-apply-rules");
     const refreshBtn = document.getElementById("sp-refresh-status");
+    const previewFrame = document.getElementById("sp-preview-frame");
+    const previewSummary = document.getElementById("sp-preview-summary");
+    const previewDescriptions = {
+      "/prerender/overview": "overview diagnostics and validation checklist.",
+      "/prerender/metrics": "navigation timing comparison view.",
+      "/prerender/network": "network information and prerender diagnostics.",
+    };
 
     function setText(id, value) {
       const el = document.getElementById(id);
@@ -533,7 +540,7 @@
       const rulesScript = existing || document.createElement("script");
       if (!existing) {
         rulesScript.id = "dynamic-speculation-rules";
-        rulesScript.type = "application/speculationrules";
+        rulesScript.type = "speculationrules";
         document.head.appendChild(rulesScript);
       }
       rulesScript.textContent = JSON.stringify({
@@ -559,8 +566,32 @@
       setText("sp-boomr-variant", runtime.boomerangVariant || "unknown");
     }
 
+    function updatePreview(src) {
+      if (previewFrame) {
+        previewFrame.src = src;
+      }
+      if (previewSummary) {
+        const description = previewDescriptions[src] || "selected prerender target.";
+        previewSummary.innerHTML = `<strong>Previewing:</strong> <code>${src}</code> — ${description}`;
+      }
+    }
+
     if (applyBtn) applyBtn.addEventListener("click", installRulesNow);
     if (refreshBtn) refreshBtn.addEventListener("click", refreshStatus);
+
+    document.querySelectorAll("[data-preview-src]").forEach(button => {
+      button.addEventListener("click", () => updatePreview(button.dataset.previewSrc));
+    });
+
+    document.querySelectorAll("[data-prerender-preview]").forEach(link => {
+      link.addEventListener("click", (e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
+          return;
+        }
+        e.preventDefault();
+        updatePreview(link.dataset.prerenderPreview);
+      });
+    });
 
     window.addEventListener("speculation-rules-status", refreshStatus);
     window.addEventListener("boomr-runtime-config", refreshStatus);
@@ -568,6 +599,7 @@
     document.addEventListener("prerenderingchange", refreshStatus);
 
     refreshStatus();
+    updatePreview("/prerender/overview");
   }
 
   // ─── XHR & Fetch ──────────────────────────────────────────────────

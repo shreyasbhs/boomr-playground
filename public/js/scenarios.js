@@ -767,7 +767,7 @@ window.SCENARIOS["speculation-prerender"] = function () {
 
 <div class="card">
   <h3>How This Is Wired</h3>
-  <p>This playground injects a <code>&lt;script type="application/speculationrules"&gt;</code> block on the main page to prerender a few same-origin URLs. Use the links below to navigate to those pages and verify prerender activation timing.</p>
+  <p>This playground injects a <code>&lt;script type="speculationrules"&gt;</code> block on the main page to prerender a few same-origin URLs. Use the links below to navigate to those pages and verify prerender activation timing.</p>
   <div class="info-box">
     <strong>Note:</strong> Speculation Rules prerender currently works best in Chromium-based browsers. If unsupported, links still work as normal navigations.
   </div>
@@ -791,15 +791,15 @@ window.SCENARIOS["speculation-prerender"] = function () {
   </div>
 
   <div class="prerender-links">
-    <a class="prerender-link" href="/prerender/overview">
+    <a class="prerender-link" href="/prerender/overview" data-prerender-preview="/prerender/overview">
       <strong>Open /prerender/overview</strong><br>
       Review the overview page with activation diagnostics and a validation checklist.
     </a>
-    <a class="prerender-link" href="/prerender/metrics">
+    <a class="prerender-link" href="/prerender/metrics" data-prerender-preview="/prerender/metrics">
       <strong>Open /prerender/metrics</strong><br>
       Compare navigation timing values such as response end, DOM content loaded, and load event end.
     </a>
-    <a class="prerender-link" href="/prerender/network">
+    <a class="prerender-link" href="/prerender/network" data-prerender-preview="/prerender/network">
       <strong>Open /prerender/network</strong><br>
       Inspect prerender behavior alongside effective connection type, downlink, RTT, and save-data state.
     </a>
@@ -807,6 +807,30 @@ window.SCENARIOS["speculation-prerender"] = function () {
 
   <div class="info-box" style="margin-top:12px">
     <strong>Tip:</strong> You can force Boomerang mode from URL: <code>?boomr=debug</code>, <code>?boomr=min</code>, or <code>?boomr=edge</code>.
+  </div>
+</div>
+
+<div class="card">
+  <h3>Inline Preview</h3>
+  <p>Select a prerender target below to load that real route inside the playground, then use the direct link if you want to navigate the full page.</p>
+
+  <div class="controls">
+    <button class="btn" id="sp-preview-overview" data-preview-src="/prerender/overview">Preview Overview</button>
+    <button class="btn btn-secondary" id="sp-preview-metrics" data-preview-src="/prerender/metrics">Preview Metrics</button>
+    <button class="btn btn-secondary" id="sp-preview-network" data-preview-src="/prerender/network">Preview Network</button>
+  </div>
+
+  <div class="info-box" id="sp-preview-summary">
+    <strong>Previewing:</strong> <code>/prerender/overview</code> — overview diagnostics and validation checklist.
+  </div>
+
+  <div class="action-area" style="padding:12px; min-height:auto; align-items:stretch;">
+    <iframe
+      id="sp-preview-frame"
+      title="Prerender Target Preview"
+      src="/prerender/overview"
+      style="width:100%;height:520px;border:1px solid var(--border);border-radius:8px;background:var(--bg)">
+    </iframe>
   </div>
 </div>
 
