@@ -530,16 +530,16 @@
       }
 
       const existing = document.getElementById("dynamic-speculation-rules");
-      if (existing) existing.remove();
-
-      const rulesScript = document.createElement("script");
-      rulesScript.id = "dynamic-speculation-rules";
-      rulesScript.type = "speculationrules";
+      const rulesScript = existing || document.createElement("script");
+      if (!existing) {
+        rulesScript.id = "dynamic-speculation-rules";
+        rulesScript.type = "application/speculationrules";
+        document.head.appendChild(rulesScript);
+      }
       rulesScript.textContent = JSON.stringify({
         prefetch: [{ source: "list", urls: targets }],
         prerender: [{ source: "list", urls: targets }],
       });
-      document.head.appendChild(rulesScript);
 
       window.dispatchEvent(new CustomEvent("speculation-rules-status", {
         detail: { installed: true, supported: true, targets: targets }

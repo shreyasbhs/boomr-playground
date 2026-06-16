@@ -767,7 +767,7 @@ window.SCENARIOS["speculation-prerender"] = function () {
 
 <div class="card">
   <h3>How This Is Wired</h3>
-  <p>This playground injects a <code>&lt;script type="speculationrules"&gt;</code> block on the main page to prerender a few same-origin URLs. Use the links below to navigate to those pages and verify prerender activation timing.</p>
+  <p>This playground injects a <code>&lt;script type="application/speculationrules"&gt;</code> block on the main page to prerender a few same-origin URLs. Use the links below to navigate to those pages and verify prerender activation timing.</p>
   <div class="info-box">
     <strong>Note:</strong> Speculation Rules prerender currently works best in Chromium-based browsers. If unsupported, links still work as normal navigations.
   </div>
@@ -791,9 +791,18 @@ window.SCENARIOS["speculation-prerender"] = function () {
   </div>
 
   <div class="prerender-links">
-    <a class="prerender-link" href="/prerender/overview">Open prerender target: Overview</a>
-    <a class="prerender-link" href="/prerender/metrics">Open prerender target: Metrics</a>
-    <a class="prerender-link" href="/prerender/network">Open prerender target: Network</a>
+    <a class="prerender-link" href="/prerender/overview">
+      <strong>Open /prerender/overview</strong><br>
+      Review the overview page with activation diagnostics and a validation checklist.
+    </a>
+    <a class="prerender-link" href="/prerender/metrics">
+      <strong>Open /prerender/metrics</strong><br>
+      Compare navigation timing values such as response end, DOM content loaded, and load event end.
+    </a>
+    <a class="prerender-link" href="/prerender/network">
+      <strong>Open /prerender/network</strong><br>
+      Inspect prerender behavior alongside effective connection type, downlink, RTT, and save-data state.
+    </a>
   </div>
 
   <div class="info-box" style="margin-top:12px">
