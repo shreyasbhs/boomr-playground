@@ -215,6 +215,64 @@ app.get("/api/spa-page/:page", (req, res) => {
 
 function renderPrerenderPage(pageName, runtimeConfig) {
   const prettyName = pageName.charAt(0).toUpperCase() + pageName.slice(1);
+  const pageContentMap = {
+    overview: {
+      subtitle: "Overview of prerender activation and page lifecycle.",
+      body: `
+  <div class="card">
+    <h2>What this page demonstrates</h2>
+    <ul>
+      <li>This URL is listed in the speculation rules list on the main app.</li>
+      <li>If prerendered, activation should be faster and <code>activationStart</code> may be non-zero.</li>
+      <li>After activation, Boomerang sends regular page-load beacons from this route.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h2>Validation checklist</h2>
+    <ol>
+      <li>Open this page from the Speculation Rules scenario links.</li>
+      <li>Confirm diagnostics values updated after navigation.</li>
+      <li>Compare with direct hard navigation to this URL.</li>
+    </ol>
+  </div>
+      `,
+    },
+    metrics: {
+      subtitle: "Metrics-focused prerender target with lightweight timing summary.",
+      body: `
+  <div class="card">
+    <h2>Performance quick view</h2>
+    <div class="row"><span class="k">DOM Content Loaded</span><span class="v" id="metric-dcl">-</span></div>
+    <div class="row"><span class="k">Load Event End</span><span class="v" id="metric-load-end">-</span></div>
+    <div class="row"><span class="k">Response End</span><span class="v" id="metric-response-end">-</span></div>
+  </div>
+  <div class="card">
+    <h2>What to compare</h2>
+    <p>Use this page to compare timings between prerender activation and direct navigation. Timing values are taken from <code>PerformanceNavigationTiming</code>.</p>
+  </div>
+      `,
+    },
+    network: {
+      subtitle: "Network-focused prerender target with connection information.",
+      body: `
+  <div class="card">
+    <h2>Connection summary</h2>
+    <div class="row"><span class="k">effectiveType</span><span class="v" id="net-effective-type">-</span></div>
+    <div class="row"><span class="k">downlink</span><span class="v" id="net-downlink">-</span></div>
+    <div class="row"><span class="k">rtt</span><span class="v" id="net-rtt">-</span></div>
+    <div class="row"><span class="k">saveData</span><span class="v" id="net-save-data">-</span></div>
+  </div>
+  <div class="card">
+    <h2>Usage</h2>
+    <p>This route helps validate prerender behavior while also checking network context that Boomerang may include for mobile/network metrics.</p>
+  </div>
+      `,
+    },
+  };
+  const selectedContent = pageContentMap[pageName] || {
+    subtitle: "Prerender destination page.",
+    body: '<div class="card"><p>No specific content configured for this page.</p></div>',
+  };
   const localBoomerangScript = runtimeConfig.loadLocalBoomerang && runtimeConfig.boomerangUrl
     ? `<script src="${runtimeConfig.boomerangUrl}"></script>`
     : "";
@@ -243,7 +301,10 @@ function renderPrerenderPage(pageName, runtimeConfig) {
       line-height: 1.5;
     }
     h1 { margin: 0 0 6px; }
+    h2 { margin: 0 0 10px; font-size: 18px; }
     p { color: var(--muted); }
+    ul, ol { margin: 0; padding-left: 20px; color: var(--text); }
+    li { margin-bottom: 8px; }
     .card {
       margin-top: 16px;
       background: var(--bg-card);
@@ -269,7 +330,7 @@ function renderPrerenderPage(pageName, runtimeConfig) {
 </head>
 <body>
   <h1>Prerender Target: ${prettyName}</h1>
-  <p>This page is a speculation-rules prerender destination. Use these values to verify activation behavior.</p>
+  <p>${selectedContent.subtitle}</p>
 
   <div class="card">
     <div class="row"><span class="k">document.prerendering</span><span class="v" id="diag-prerendering">-</span></div>
@@ -284,6 +345,8 @@ function renderPrerenderPage(pageName, runtimeConfig) {
     <a href="/prerender/metrics">Metrics</a>
     <a href="/prerender/network">Network</a>
   </div>
+
+  ${selectedContent.body}
 
   <script>
     window.BOOMR_mq = window.BOOMR_mq || [];
@@ -332,6 +395,31 @@ function renderPrerenderPage(pageName, runtimeConfig) {
 
       if ("onprerenderingchange" in document) {
         document.addEventListener("prerenderingchange", updateDiagnostics);
+      }
+    })();
+
+    (function () {
+      var nav = performance.getEntriesByType("navigation")[0];
+      if (nav) {
+        var dcl = document.getElementById("metric-dcl");
+        var loadEnd = document.getElementById("metric-load-end");
+        var responseEnd = document.getElementById("metric-response-end");
+        if (dcl) dcl.textContent = nav.domContentLoadedEventEnd.toFixed(2) + "ms";
+        if (loadEnd) loadEnd.textContent = nav.loadEventEnd.toFixed(2) + "ms";
+        if (responseEnd) responseEnd.textContent = nav.responseEnd.toFixed(2) + "ms";
+      }
+
+      var conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+      if (conn) {
+        var et = document.getElementById("net-effective-type");
+        var dl = document.getElementById("net-downlink");
+        var rtt = document.getElementById("net-rtt");
+        var sd = document.getElementById("net-save-data");
+
+        if (et) et.textContent = conn.effectiveType || "n/a";
+        if (dl) dl.textContent = (conn.downlink != null ? conn.downlink + " Mbps" : "n/a");
+        if (rtt) rtt.textContent = (conn.rtt != null ? conn.rtt + "ms" : "n/a");
+        if (sd) sd.textContent = conn.saveData ? "true" : "false";
       }
     })();
   </script>

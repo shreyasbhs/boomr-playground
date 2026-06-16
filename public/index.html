@@ -102,6 +102,12 @@
 </script>
 <script>
   (function () {
+    const DEFAULT_SPECULATION_TARGETS = [
+      "/prerender/overview",
+      "/prerender/metrics",
+      "/prerender/network"
+    ];
+
     function queryToString() {
       const params = new URLSearchParams(window.location.search);
       return params.toString();
@@ -176,6 +182,10 @@
     }
 
     const query = queryToString();
+
+    // Install defaults as early as possible so Chrome can register preloading candidates.
+    installSpeculationRules(DEFAULT_SPECULATION_TARGETS);
+
     const configUrl = "/api/runtime-config" + (query ? "?" + query : "");
     fetch(configUrl)
       .then(function (response) { return response.json(); })
@@ -196,7 +206,7 @@
       })
       .catch(function () {
         // Fallback: keep app functional even if runtime config fetch fails.
-        installSpeculationRules(["/prerender/overview", "/prerender/metrics", "/prerender/network"]);
+        installSpeculationRules(DEFAULT_SPECULATION_TARGETS);
         loadBoomerangScript("/boomerang/boomerang-1.0.0-debug.js");
       });
   })();
