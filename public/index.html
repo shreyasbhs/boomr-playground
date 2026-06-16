@@ -6,19 +6,19 @@
   <title>Boomerang Performance Playground</title>
   <link rel="stylesheet" href="/css/style.css">
   <script id="dynamic-speculation-rules" type="speculationrules">
+   {
+  "prerender": [
     {
-      
-    "prerender": [  {
-        "where": {
-          "and": [
-            { "href_matches": "/prerender/overview" },
-            { "href_matches": "/prerender/metrics" },
-            { "href_matches": "/prerender/network" },
-            ]
-        }
-      }
+      "where": {
+        "or": [
+          { "href_matches": "/prerender/overview" },
+          { "href_matches": "/prerender/metrics" },
+          { "href_matches": "/prerender/network" }
         ]
+      }
     }
+  ]
+}
   </script>
 </head>
 <body>
@@ -149,17 +149,19 @@
         document.head.appendChild(rulesScript);
       }
 
-      rulesScript.textContent = `
-        "prerender": [  {
-        "where": {
-          "and": [
-            { "href_matches": "/prerender/overview" },
-            { "href_matches": "/prerender/metrics" },
-            { "href_matches": "/prerender/network" },
-            ]
-        }
+      rulesScript.textContent = `{
+  "prerender": [
+    {
+      "where": {
+        "or": [
+          { "href_matches": "/prerender/overview" },
+          { "href_matches": "/prerender/metrics" },
+          { "href_matches": "/prerender/network" }
+        ]
       }
-    ]`
+    }
+  ]
+}`
 
       window.dispatchEvent(new CustomEvent("speculation-rules-status", {
         detail: { installed: true, supported: true, targets: targets }

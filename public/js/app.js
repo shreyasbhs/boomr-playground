@@ -543,16 +543,19 @@
         rulesScript.type = "speculationrules";
         document.head.appendChild(rulesScript);
       }
-      rulesScript.textContent = `"prerender": [  {
-        "where": {
-          "and": [
-            { "href_matches": "/prerender/overview" },
-            { "href_matches": "/prerender/metrics" },
-            { "href_matches": "/prerender/network" },
-            ]
-        }
+      rulesScript.textContent = `{
+  "prerender": [
+    {
+      "where": {
+        "or": [
+          { "href_matches": "/prerender/overview" },
+          { "href_matches": "/prerender/metrics" },
+          { "href_matches": "/prerender/network" }
+        ]
       }
-        ]`
+    }
+  ]
+}`
       window.dispatchEvent(new CustomEvent("speculation-rules-status", {
         detail: { installed: true, supported: true, targets: targets }
       }));
