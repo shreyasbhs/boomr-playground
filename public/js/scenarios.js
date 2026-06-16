@@ -815,9 +815,9 @@ window.SCENARIOS["speculation-prerender"] = function () {
   <p>Select a prerender target below to load that real route inside the playground, then use the direct link if you want to navigate the full page.</p>
 
   <div class="controls">
-    <button class="btn" id="sp-preview-overview" data-preview-src="/prerender/overview">Preview Overview</button>
-    <button class="btn btn-secondary" id="sp-preview-metrics" data-preview-src="/prerender/metrics">Preview Metrics</button>
-    <button class="btn btn-secondary" id="sp-preview-network" data-preview-src="/prerender/network">Preview Network</button>
+    <a class="btn" id="sp-preview-overview" href="/prerender/overview" data-preview-src="/prerender/overview">Preview Overview</a>
+    <a class="btn btn-secondary" id="sp-preview-metrics" href="/prerender/metrics" data-preview-src="/prerender/metrics">Preview Metrics</a>
+    <a class="btn btn-secondary" id="sp-preview-network" href="/prerender/network" data-preview-src="/prerender/network">Preview Network</a>
   </div>
 
   <div class="info-box" id="sp-preview-summary">

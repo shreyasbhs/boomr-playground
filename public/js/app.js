@@ -544,13 +544,13 @@
         document.head.appendChild(rulesScript);
       }
       rulesScript.textContent = `{
-  "prerender": [
+ "prerender": [
     {
       "where": {
         "or": [
           { "href_matches": "*/prerender/overview*" },
           { "href_matches": "*/prerender/metrics*" },
-          { "href_matches": "/&prerender/network*" }
+          { "href_matches": "*/prerender/network*" }
         ]
       },
   "eagerness": "moderate"
@@ -588,8 +588,14 @@
     if (applyBtn) applyBtn.addEventListener("click", installRulesNow);
     if (refreshBtn) refreshBtn.addEventListener("click", refreshStatus);
 
-    document.querySelectorAll("[data-preview-src]").forEach(button => {
-      button.addEventListener("click", () => updatePreview(button.dataset.previewSrc));
+    document.querySelectorAll("[data-preview-src]").forEach(link => {
+      link.addEventListener("click", (e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
+          return; // Allow open in new tab / window
+        }
+        e.preventDefault();
+        updatePreview(link.dataset.previewSrc);
+      });
     });
 
     document.querySelectorAll("[data-prerender-preview]").forEach(link => {
