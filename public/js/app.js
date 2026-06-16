@@ -540,7 +540,7 @@
       const rulesScript = existing || document.createElement("script");
       if (!existing) {
         rulesScript.id = "dynamic-speculation-rules";
-        rulesScript.type = "speculationrules";
+        rulesScript.type = "application/speculationrules";
         document.head.appendChild(rulesScript);
       }
       rulesScript.textContent = JSON.stringify({
