@@ -12,7 +12,7 @@ npm start
 
 Then open **http://localhost:3456** in your browser.
 
-> **Prerequisite:** The boomerang build must exist at `../build/boomerang-1.0.0-debug.js`. Run `grunt clean build` from the repo root if it doesn't.
+> **Prerequisite:** Boomerang build files must exist in `../build`. Run `grunt clean build` from the repo root if needed.
 
 ## What's Inside
 
@@ -78,3 +78,37 @@ Default: `3456`. Override with `PORT` env variable:
 ```bash
 PORT=8080 npm start
 ```
+
+## Boomerang Build Mode (Debug vs Minified)
+
+This app loads Boomerang dynamically from `/api/runtime-config` and supports choosing debug or minified builds:
+
+- Environment default (recommended for hosting):
+
+```bash
+BOOMERANG_VARIANT=min npm start
+```
+
+- Force debug build:
+
+```bash
+BOOMERANG_VARIANT=debug npm start
+```
+
+- Per-request override via query param:
+
+```text
+http://localhost:3456/?boomr=debug
+http://localhost:3456/?boomr=min
+http://localhost:3456/?boomr=edge
+```
+
+Edge-injected mode (no local Boomerang script tag in app HTML):
+
+```bash
+BOOMERANG_VARIANT=edge npm start
+```
+
+Use this when Akamai Edge injects the Boomerang loader snippet for you. In `edge` mode, the app does not include any Boomerang file and waits for injected `BOOMR` to appear.
+
+The prerender target pages (`/prerender/*`) also honor the same `?boomr=...` override.

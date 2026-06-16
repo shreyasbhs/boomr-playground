@@ -1,8 +1,79 @@
 const express = require("express");
+const fs = require("fs");
 const path = require("path");
 
 const app = express();
 const PORT = process.env.PORT || 3456;
+const BOOMERANG_BUILD_DIR = path.join(__dirname, "..", "build");
+const SPECULATION_TARGETS = [
+  "/prerender/overview",
+  "/prerender/metrics",
+  "/prerender/network",
+];
+
+function fileExists(filePath) {
+  try {
+    return fs.existsSync(filePath);
+  } catch (e) {
+    return false;
+  }
+}
+
+function getBoomerangCandidates(variant) {
+  if (variant === "min") {
+    return [
+      "boomerang-1.0.0.min.js",
+      "boomerang.min.js",
+      "boomerang-1.0.0.js",
+      "boomerang.js",
+    ];
+  }
+
+  return [
+    "boomerang-1.0.0-debug.js",
+    "boomerang.debug.js",
+    "boomerang-1.0.0.js",
+    "boomerang.js",
+  ];
+}
+
+function pickBoomerangAsset(variant) {
+  const candidates = getBoomerangCandidates(variant);
+  const found = candidates.find(file => fileExists(path.join(BOOMERANG_BUILD_DIR, file)));
+  return found || "boomerang-1.0.0-debug.js";
+}
+
+function getRequestedVariant(req) {
+  const requested = String(req.query.boomr || "").toLowerCase();
+  if (requested === "debug" || requested === "min" || requested === "edge") {
+    return requested;
+  }
+
+  const envVariant = String(process.env.BOOMERANG_VARIANT || "").toLowerCase();
+  if (envVariant === "debug" || envVariant === "min" || envVariant === "edge") {
+    return envVariant;
+  }
+
+  if (String(process.env.BOOMERANG_DEBUG || "").toLowerCase() === "true") {
+    return "debug";
+  }
+
+  return "min";
+}
+
+function buildRuntimeConfig(req) {
+  const variant = getRequestedVariant(req);
+  const shouldLoadLocalBoomerang = variant !== "edge";
+  const boomerangFile = shouldLoadLocalBoomerang ? pickBoomerangAsset(variant) : null;
+
+  return {
+    boomerangVariant: variant,
+    loadLocalBoomerang: shouldLoadLocalBoomerang,
+    boomerangFile,
+    boomerangUrl: boomerangFile ? `/boomerang/${boomerangFile}` : null,
+    speculationTargets: SPECULATION_TARGETS,
+  };
+}
 
 // ─── Beacon collector ────────────────────────────────────────────────
 const beacons = [];
@@ -46,6 +117,10 @@ app.get("/beacon-stream", (req, res) => {
 // Return recent beacons as JSON
 app.get("/api/beacons", (_req, res) => {
   res.json(beacons.slice(-50));
+});
+
+app.get("/api/runtime-config", (req, res) => {
+  res.json(buildRuntimeConfig(req));
 });
 
 // ─── Configurable simulation endpoints ───────────────────────────────
@@ -136,6 +211,146 @@ app.get("/api/spa-page/:page", (req, res) => {
   };
   const page = pages[req.params.page] || { title: "Unknown", content: "Page not found." };
   setTimeout(() => res.json(page), delay);
+});
+
+function renderPrerenderPage(pageName, runtimeConfig) {
+  const prettyName = pageName.charAt(0).toUpperCase() + pageName.slice(1);
+  const localBoomerangScript = runtimeConfig.loadLocalBoomerang && runtimeConfig.boomerangUrl
+    ? `<script src="${runtimeConfig.boomerangUrl}"></script>`
+    : "";
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prerender Target: ${prettyName}</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --bg-card: #1c1f2e;
+      --border: #2a2d3e;
+      --text: #e1e4ed;
+      --muted: #8b8fa3;
+      --accent: #6366f1;
+      --ok: #22c55e;
+    }
+    body {
+      margin: 0;
+      padding: 28px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    h1 { margin: 0 0 6px; }
+    p { color: var(--muted); }
+    .card {
+      margin-top: 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+    .row { display: flex; justify-content: space-between; gap: 8px; border-bottom: 1px solid var(--border); padding: 6px 0; }
+    .row:last-child { border-bottom: none; }
+    .k { color: var(--muted); font-family: Menlo, Monaco, monospace; }
+    .v { color: var(--ok); font-family: Menlo, Monaco, monospace; }
+    .links { margin-top: 14px; display: flex; gap: 10px; flex-wrap: wrap; }
+    a {
+      color: var(--text);
+      text-decoration: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      background: #141824;
+    }
+    a:hover { border-color: var(--accent); color: #a9b0ff; }
+  </style>
+</head>
+<body>
+  <h1>Prerender Target: ${prettyName}</h1>
+  <p>This page is a speculation-rules prerender destination. Use these values to verify activation behavior.</p>
+
+  <div class="card">
+    <div class="row"><span class="k">document.prerendering</span><span class="v" id="diag-prerendering">-</span></div>
+    <div class="row"><span class="k">visibilityState</span><span class="v" id="diag-visibility">-</span></div>
+    <div class="row"><span class="k">activationStart</span><span class="v" id="diag-activation">-</span></div>
+    <div class="row"><span class="k">navigation.type</span><span class="v" id="diag-nav-type">-</span></div>
+  </div>
+
+  <div class="links">
+    <a href="/">Back to Playground</a>
+    <a href="/prerender/overview">Overview</a>
+    <a href="/prerender/metrics">Metrics</a>
+    <a href="/prerender/network">Network</a>
+  </div>
+
+  <script>
+    window.BOOMR_mq = window.BOOMR_mq || [];
+  </script>
+  ${localBoomerangScript}
+  <script>
+    (function () {
+      var initialized = false;
+
+      function initIfAvailable() {
+        if (initialized || !window.BOOMR) return false;
+        BOOMR.init({
+          beacon_url: "/beacon",
+          instrument_xhr: true,
+          autorun: true,
+          ResourceTiming: { enabled: true, clearOnBeacon: false }
+        });
+        initialized = true;
+        return true;
+      }
+
+      if (!initIfAvailable()) {
+        var attempts = 0;
+        var timer = setInterval(function () {
+          attempts++;
+          if (initIfAvailable() || attempts >= 100) {
+            clearInterval(timer);
+          }
+        }, 100);
+      }
+    })();
+
+    (function () {
+      function updateDiagnostics() {
+        var nav = performance.getEntriesByType("navigation")[0];
+        var activation = nav && typeof nav.activationStart === "number" ? nav.activationStart.toFixed(2) + "ms" : "n/a";
+
+        document.getElementById("diag-prerendering").textContent = String(!!document.prerendering);
+        document.getElementById("diag-visibility").textContent = document.visibilityState;
+        document.getElementById("diag-activation").textContent = activation;
+        document.getElementById("diag-nav-type").textContent = nav ? nav.type : "n/a";
+      }
+
+      updateDiagnostics();
+      document.addEventListener("visibilitychange", updateDiagnostics);
+
+      if ("onprerenderingchange" in document) {
+        document.addEventListener("prerenderingchange", updateDiagnostics);
+      }
+    })();
+  </script>
+</body>
+</html>`;
+}
+
+app.get("/prerender/:page", (req, res) => {
+  const page = req.params.page;
+  const allowed = new Set(["overview", "metrics", "network"]);
+
+  if (!allowed.has(page)) {
+    res.status(404).send("Unknown prerender page");
+    return;
+  }
+
+  res.setHeader("Content-Type", "text/html; charset=utf-8");
+  res.setHeader("Cache-Control", "no-store");
+  res.send(renderPrerenderPage(page, buildRuntimeConfig(req)));
 });
 
 // ─── Static files ────────────────────────────────────────────────────

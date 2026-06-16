@@ -602,6 +602,31 @@ input:focus, select:focus { border-color: var(--accent); }
   color: var(--text-muted);
 }
 
+/* ─── Speculation Rules / Prerender links ─────────────────────────── */
+.prerender-links {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.prerender-link {
+  display: block;
+  text-decoration: none;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  font-weight: 600;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.prerender-link:hover {
+  border-color: var(--accent);
+  color: var(--accent-hover);
+  background: var(--bg-hover);
+}
+
 /* ─── Scrollbar ─────────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }

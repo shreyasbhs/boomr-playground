@@ -80,6 +80,7 @@
       case "lcp": bindLCP(); break;
       case "fid-inp": bindFidInp(); break;
       case "long-tasks": bindLongTasks(); break;
+      case "speculation-prerender": bindSpeculationPrerender(); break;
       case "xhr-fetch": bindXhrFetch(); break;
       case "spa": bindSpa(); break;
       case "errors": bindErrors(); break;
@@ -486,6 +487,87 @@
 
       runTask(0);
     });
+  }
+
+  // ─── Speculation Rules / Prerender ───────────────────────────────
+
+  function bindSpeculationPrerender() {
+    const applyBtn = document.getElementById("sp-apply-rules");
+    const refreshBtn = document.getElementById("sp-refresh-status");
+
+    function setText(id, value) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value;
+    }
+
+    function supportsSpeculationRules() {
+      return (
+        typeof HTMLScriptElement !== "undefined" &&
+        typeof HTMLScriptElement.supports === "function" &&
+        HTMLScriptElement.supports("speculationrules")
+      );
+    }
+
+    function getActivationStart() {
+      const nav = performance.getEntriesByType("navigation")[0];
+      if (!nav || typeof nav.activationStart !== "number") return "n/a";
+      return nav.activationStart.toFixed(2) + "ms";
+    }
+
+    function installRulesNow() {
+      const targets = (window.APP_RUNTIME && window.APP_RUNTIME.speculationTargets) || [
+        "/prerender/overview",
+        "/prerender/metrics",
+        "/prerender/network",
+      ];
+
+      if (!supportsSpeculationRules()) {
+        window.dispatchEvent(new CustomEvent("speculation-rules-status", {
+          detail: { installed: false, supported: false }
+        }));
+        refreshStatus();
+        return;
+      }
+
+      const existing = document.getElementById("dynamic-speculation-rules");
+      if (existing) existing.remove();
+
+      const rulesScript = document.createElement("script");
+      rulesScript.id = "dynamic-speculation-rules";
+      rulesScript.type = "application/speculationrules";
+      rulesScript.textContent = JSON.stringify({
+        prefetch: [{ source: "list", urls: targets }],
+        prerender: [{ source: "list", urls: targets }],
+      });
+      document.head.appendChild(rulesScript);
+
+      window.dispatchEvent(new CustomEvent("speculation-rules-status", {
+        detail: { installed: true, supported: true, targets: targets }
+      }));
+
+      refreshStatus();
+    }
+
+    function refreshStatus() {
+      const hasRules = !!document.getElementById("dynamic-speculation-rules");
+      const runtime = window.APP_RUNTIME || {};
+
+      setText("sp-support", supportsSpeculationRules() ? "Yes" : "No");
+      setText("sp-installed", hasRules ? "Yes" : "No");
+      setText("sp-prerendering", String(!!document.prerendering));
+      setText("sp-activation", getActivationStart());
+      setText("sp-boomr-variant", runtime.boomerangVariant || "unknown");
+    }
+
+    if (applyBtn) applyBtn.addEventListener("click", installRulesNow);
+    if (refreshBtn) refreshBtn.addEventListener("click", refreshStatus);
+
+    window.addEventListener("speculation-rules-status", refreshStatus);
+    window.addEventListener("boomr-runtime-config", refreshStatus);
+    document.addEventListener("visibilitychange", refreshStatus);
+    document.addEventListener("prerenderingchange", refreshStatus);
+
+    refreshStatus();
   }
 
   // ─── XHR & Fetch ──────────────────────────────────────────────────

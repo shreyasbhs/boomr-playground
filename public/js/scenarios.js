@@ -756,3 +756,58 @@ window.SCENARIOS.bandwidth = function () {
 </div>
 `;
 };
+
+// ─────────────────────────────────────────────────────────────────────
+// Speculation Rules & Prerender
+// ─────────────────────────────────────────────────────────────────────
+window.SCENARIOS["speculation-prerender"] = function () {
+  return `
+<h2 class="scenario-title">Speculation Rules &amp; Prerender</h2>
+<p class="scenario-subtitle">Validate how prerendered navigations behave and how Boomerang beacons look after activation.</p>
+
+<div class="card">
+  <h3>How This Is Wired</h3>
+  <p>This playground injects a <code>&lt;script type="application/speculationrules"&gt;</code> block on the main page to prerender a few same-origin URLs. Use the links below to navigate to those pages and verify prerender activation timing.</p>
+  <div class="info-box">
+    <strong>Note:</strong> Speculation Rules prerender currently works best in Chromium-based browsers. If unsupported, links still work as normal navigations.
+  </div>
+</div>
+
+<div class="card">
+  <h3>Prerender Test Links</h3>
+  <p>Open one of these targets from this page. If prerender was successful, the destination page should report <code>navigation.activationStart &gt; 0</code> and/or <code>document.prerendering</code> lifecycle transitions.</p>
+
+  <div class="controls">
+    <button class="btn" id="sp-apply-rules">Apply Speculation Rules Now</button>
+    <button class="btn btn-secondary" id="sp-refresh-status">Refresh API Status</button>
+  </div>
+
+  <div class="metric-grid" id="sp-status-grid">
+    <div class="metric-card"><div class="metric-label">Speculation Rules Support</div><div class="metric-value" style="font-size:18px" id="sp-support">-</div></div>
+    <div class="metric-card"><div class="metric-label">Rules Installed</div><div class="metric-value" style="font-size:18px" id="sp-installed">-</div></div>
+    <div class="metric-card"><div class="metric-label">document.prerendering</div><div class="metric-value" style="font-size:18px" id="sp-prerendering">-</div></div>
+    <div class="metric-card"><div class="metric-label">activationStart</div><div class="metric-value" style="font-size:18px" id="sp-activation">-</div></div>
+    <div class="metric-card"><div class="metric-label">Boomerang Variant</div><div class="metric-value" style="font-size:18px" id="sp-boomr-variant">-</div></div>
+  </div>
+
+  <div class="prerender-links">
+    <a class="prerender-link" href="/prerender/overview">Open prerender target: Overview</a>
+    <a class="prerender-link" href="/prerender/metrics">Open prerender target: Metrics</a>
+    <a class="prerender-link" href="/prerender/network">Open prerender target: Network</a>
+  </div>
+
+  <div class="info-box" style="margin-top:12px">
+    <strong>Tip:</strong> You can force Boomerang mode from URL: <code>?boomr=debug</code>, <code>?boomr=min</code>, or <code>?boomr=edge</code>.
+  </div>
+</div>
+
+<div class="card">
+  <h3>What to Check</h3>
+  <ul>
+    <li><code>document.prerendering</code> state and <code>prerenderingchange</code> event on destination pages</li>
+    <li><code>PerformanceNavigationTiming.activationStart</code> value (non-zero usually means prerender activation occurred)</li>
+    <li>Beacon Inspector entries right after activation/navigation for timing differences vs non-prerender nav</li>
+  </ul>
+</div>
+`;
+};

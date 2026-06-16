@@ -60,6 +60,9 @@
     </div>
     <div class="sidebar-section">
       <h3>Advanced</h3>
+      <a href="#" class="nav-item" data-scenario="speculation-prerender">
+        <span class="nav-icon">🚀</span> Speculation Rules / Prerender
+      </a>
       <a href="#" class="nav-item" data-scenario="xhr-fetch">
         <span class="nav-icon">🔄</span> XHR &amp; Fetch
       </a>
@@ -97,23 +100,106 @@
   // Method queue so we can call BOOMR before it loads
   window.BOOMR_mq = window.BOOMR_mq || [];
 </script>
-<script src="/boomerang/boomerang-1.0.0-debug.js"></script>
 <script>
-  if (window.BOOMR) {
-    BOOMR.init({
-      beacon_url: "/beacon",
-      instrument_xhr: true,
-      autorun: true,
-      ResourceTiming: {
-        enabled: true,
-        clearOnBeacon: false
+  (function () {
+    function queryToString() {
+      const params = new URLSearchParams(window.location.search);
+      return params.toString();
+    }
+
+    function installSpeculationRules(targets) {
+      const supportsSpeculationRules =
+        typeof HTMLScriptElement !== "undefined" &&
+        typeof HTMLScriptElement.supports === "function" &&
+        HTMLScriptElement.supports("speculationrules");
+
+      if (!supportsSpeculationRules) {
+        window.dispatchEvent(new CustomEvent("speculation-rules-status", {
+          detail: { installed: false, supported: false }
+        }));
+        return;
       }
-    });
-    // Subscribe to beacon events for the inspector
-    BOOMR.subscribe("before_beacon", function(vars) {
-      window.dispatchEvent(new CustomEvent("boomr-beacon", { detail: { ...vars } }));
-    });
-  }
+
+      const existing = document.getElementById("dynamic-speculation-rules");
+      if (existing) {
+        existing.remove();
+      }
+
+      const rulesScript = document.createElement("script");
+      rulesScript.id = "dynamic-speculation-rules";
+      rulesScript.type = "application/speculationrules";
+      rulesScript.textContent = JSON.stringify({
+        prefetch: [{ source: "list", urls: targets }],
+        prerender: [{ source: "list", urls: targets }]
+      });
+      document.head.appendChild(rulesScript);
+
+      window.dispatchEvent(new CustomEvent("speculation-rules-status", {
+        detail: { installed: true, supported: true, targets: targets }
+      }));
+    }
+
+    function initBoomerang() {
+      if (window.__boomrPlaygroundInitialized || !window.BOOMR) return false;
+      BOOMR.init({
+        beacon_url: "/beacon",
+        instrument_xhr: true,
+        autorun: true,
+        ResourceTiming: {
+          enabled: true,
+          clearOnBeacon: false
+        }
+      });
+      BOOMR.subscribe("before_beacon", function(vars) {
+        window.dispatchEvent(new CustomEvent("boomr-beacon", { detail: { ...vars } }));
+      });
+      window.__boomrPlaygroundInitialized = true;
+      return true;
+    }
+
+    function loadBoomerangScript(url) {
+      const script = document.createElement("script");
+      script.src = url;
+      script.async = false;
+      script.onload = initBoomerang;
+      document.head.appendChild(script);
+    }
+
+    function waitForInjectedBoomerang(maxAttempts, intervalMs) {
+      let attempts = 0;
+      const timer = setInterval(function () {
+        attempts++;
+        if (initBoomerang() || attempts >= maxAttempts) {
+          clearInterval(timer);
+        }
+      }, intervalMs);
+    }
+
+    const query = queryToString();
+    const configUrl = "/api/runtime-config" + (query ? "?" + query : "");
+    fetch(configUrl)
+      .then(function (response) { return response.json(); })
+      .then(function (config) {
+        window.APP_RUNTIME = config;
+        window.dispatchEvent(new CustomEvent("boomr-runtime-config", { detail: config }));
+        installSpeculationRules(config.speculationTargets || []);
+
+        if (config.loadLocalBoomerang && config.boomerangUrl) {
+          loadBoomerangScript(config.boomerangUrl);
+          return;
+        }
+
+        if (!initBoomerang()) {
+          // In edge mode, BOOMR may be injected asynchronously by Akamai.
+          waitForInjectedBoomerang(120, 100);
+        }
+      })
+      .catch(function () {
+        // Fallback: keep app functional even if runtime config fetch fails.
+        installSpeculationRules(["/prerender/overview", "/prerender/metrics", "/prerender/network"]);
+        loadBoomerangScript("/boomerang/boomerang-1.0.0-debug.js");
+      });
+  })();
 </script>
 
 <script src="/js/scenarios.js"></script>
