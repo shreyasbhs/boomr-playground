@@ -767,7 +767,7 @@ window.SCENARIOS["speculation-prerender"] = function () {
 
 <div class="card">
   <h3>How This Is Wired</h3>
-  <p>This playground injects a <code>&lt;script type="speculationrules"&gt;</code> block on the main page to prerender a few same-origin URLs. Use the links below to navigate to those pages and verify prerender activation timing.</p>
+  <p>This playground injects a <code>&lt;script type="application/speculationrules"&gt;</code> block on the main page to prerender a few same-origin URLs. Use the links below to navigate to those pages and verify prerender activation timing.</p>
   <div class="info-box">
     <strong>Note:</strong> Speculation Rules prerender currently works best in Chromium-based browsers. If unsupported, links still work as normal navigations.
   </div>
