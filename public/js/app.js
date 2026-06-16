@@ -534,7 +534,7 @@
 
       const rulesScript = document.createElement("script");
       rulesScript.id = "dynamic-speculation-rules";
-      rulesScript.type = "application/speculationrules";
+      rulesScript.type = "speculationrules";
       rulesScript.textContent = JSON.stringify({
         prefetch: [{ source: "list", urls: targets }],
         prerender: [{ source: "list", urls: targets }],
