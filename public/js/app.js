@@ -543,7 +543,8 @@
         rulesScript.type = "speculationrules";
         document.head.appendChild(rulesScript);
       }
-      rulesScript.textContent = ` "prerender": [
+      rulesScript.textContent = ` {
+ "prerender": [
     {
       "where": {
         "or": [
