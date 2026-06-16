@@ -6,14 +6,13 @@
   <title>Boomerang Performance Playground</title>
   <link rel="stylesheet" href="/css/style.css">
   <script id="dynamic-speculation-rules" type="speculationrules">
-   {
- "prerender": [
+    "prerender": [
     {
       "where": {
         "or": [
-          { "href_matches": "*/prerender/overview*" },
-          { "href_matches": "*/prerender/metrics*" },
-          { "href_matches": "*/prerender/network*" }
+          { "href_matches": "/prerender/overview" },
+          { "href_matches": "/prerender/metrics" },
+          { "href_matches": "/prerender/network" }
         ]
       },
   "eagerness": "moderate"
@@ -150,14 +149,13 @@
         document.head.appendChild(rulesScript);
       }
 
-      rulesScript.textContent = `{
- "prerender": [
+      rulesScript.textContent = ` "prerender": [
     {
       "where": {
         "or": [
-          { "href_matches": "*/prerender/overview*" },
-          { "href_matches": "*/prerender/metrics*" },
-          { "href_matches": "*/prerender/network*" }
+          { "href_matches": "/prerender/overview" },
+          { "href_matches": "/prerender/metrics" },
+          { "href_matches": "/prerender/network" }
         ]
       },
   "eagerness": "moderate"

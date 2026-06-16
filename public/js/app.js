@@ -543,14 +543,13 @@
         rulesScript.type = "speculationrules";
         document.head.appendChild(rulesScript);
       }
-      rulesScript.textContent = `{
- "prerender": [
+      rulesScript.textContent = ` "prerender": [
     {
       "where": {
         "or": [
-          { "href_matches": "*/prerender/overview*" },
-          { "href_matches": "*/prerender/metrics*" },
-          { "href_matches": "*/prerender/network*" }
+          { "href_matches": "/prerender/overview" },
+          { "href_matches": "/prerender/metrics" },
+          { "href_matches": "/prerender/network" }
         ]
       },
   "eagerness": "moderate"
