@@ -8,7 +8,16 @@
   <script id="dynamic-speculation-rules" type="speculationrules">
     {
       
-    "prerender": [{ "source": "list", "urls": ["/prerender/overview", "/prerender/metrics", "/prerender/network"] }]
+    "prerender": [  {
+        "where": {
+          "and": [
+            { "href_matches": "/prerender/overview" },
+            { "href_matches": "/prerender/metrics" },
+            { "href_matches": "/prerender/network" },
+            ]
+        }
+      }
+        ]
     }
   </script>
 </head>
