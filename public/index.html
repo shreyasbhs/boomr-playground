@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Boomerang Performance Playground</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<!-- ─── Top bar ─────────────────────────────────────────────────────── -->
+<header class="topbar">
+  <div class="topbar-brand">
+    <svg class="logo" viewBox="0 0 24 24" width="28" height="28"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>
+    <h1>Boomerang Playground</h1>
+  </div>
+  <div class="topbar-actions">
+    <button id="btn-clear-beacons" class="btn btn-sm">Clear Beacons</button>
+    <span id="beacon-count" class="badge">0 beacons</span>
+  </div>
+</header>
+
+<!-- ─── Main layout ─────────────────────────────────────────────────── -->
+<div class="layout">
+
+  <!-- Sidebar navigation -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-section">
+      <h3>Getting Started</h3>
+      <a href="#" class="nav-item active" data-scenario="intro">
+        <span class="nav-icon">📖</span> Introduction
+      </a>
+    </div>
+    <div class="sidebar-section">
+      <h3>Core Metrics</h3>
+      <a href="#" class="nav-item" data-scenario="page-load">
+        <span class="nav-icon">⏱️</span> Page Load Timing
+      </a>
+      <a href="#" class="nav-item" data-scenario="navigation-timing">
+        <span class="nav-icon">🧭</span> Navigation Timing
+      </a>
+      <a href="#" class="nav-item" data-scenario="paint-timing">
+        <span class="nav-icon">🎨</span> Paint Timing (FP/FCP/LCP)
+      </a>
+      <a href="#" class="nav-item" data-scenario="resource-timing">
+        <span class="nav-icon">📦</span> Resource Timing
+      </a>
+    </div>
+    <div class="sidebar-section">
+      <h3>Web Vitals</h3>
+      <a href="#" class="nav-item" data-scenario="lcp">
+        <span class="nav-icon">🖼️</span> Largest Contentful Paint
+      </a>
+      <a href="#" class="nav-item" data-scenario="fid-inp">
+        <span class="nav-icon">👆</span> FID &amp; INP
+      </a>
+      <a href="#" class="nav-item" data-scenario="long-tasks">
+        <span class="nav-icon">🐢</span> Long Tasks
+      </a>
+    </div>
+    <div class="sidebar-section">
+      <h3>Advanced</h3>
+      <a href="#" class="nav-item" data-scenario="xhr-fetch">
+        <span class="nav-icon">🔄</span> XHR &amp; Fetch
+      </a>
+      <a href="#" class="nav-item" data-scenario="spa">
+        <span class="nav-icon">🧩</span> SPA Navigation
+      </a>
+      <a href="#" class="nav-item" data-scenario="errors">
+        <span class="nav-icon">❌</span> Error Tracking
+      </a>
+      <a href="#" class="nav-item" data-scenario="bandwidth">
+        <span class="nav-icon">📡</span> Network &amp; Bandwidth
+      </a>
+    </div>
+  </nav>
+
+  <!-- Main content area -->
+  <main class="content" id="content">
+    <!-- Scenarios are injected here -->
+  </main>
+
+  <!-- Beacon inspector panel -->
+  <aside class="inspector" id="inspector">
+    <div class="inspector-header">
+      <h3>Beacon Inspector</h3>
+      <button id="btn-toggle-inspector" class="btn btn-sm">▶</button>
+    </div>
+    <div class="inspector-body" id="inspector-body">
+      <p class="inspector-empty">No beacons captured yet. Interact with a scenario to see beacon data here.</p>
+    </div>
+  </aside>
+</div>
+
+<!-- ─── Load Boomerang ──────────────────────────────────────────────── -->
+<script>
+  // Method queue so we can call BOOMR before it loads
+  window.BOOMR_mq = window.BOOMR_mq || [];
+</script>
+<script src="/boomerang/boomerang-1.0.0-debug.js"></script>
+<script>
+  if (window.BOOMR) {
+    BOOMR.init({
+      beacon_url: "/beacon",
+      instrument_xhr: true,
+      autorun: true,
+      ResourceTiming: {
+        enabled: true,
+        clearOnBeacon: false
+      }
+    });
+    // Subscribe to beacon events for the inspector
+    BOOMR.subscribe("before_beacon", function(vars) {
+      window.dispatchEvent(new CustomEvent("boomr-beacon", { detail: { ...vars } }));
+    });
+  }
+</script>
+
+<script src="/js/scenarios.js"></script>
+<script src="/js/beacon-inspector.js"></script>
+<script src="/js/app.js"></script>
+</body>
+</html>
