@@ -1,9 +1,23 @@
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
+const https = require("https");
 
 const app = express();
 const PORT = process.env.PORT || 3456;
+
+// Load SSL certificates for HTTPS
+const certPath = path.join(__dirname, "certs");
+const keyPath = path.join(certPath, "server.key");
+const certFile = path.join(certPath, "server.crt");
+
+let sslOptions = null;
+if (fs.existsSync(keyPath) && fs.existsSync(certFile)) {
+  sslOptions = {
+    key: fs.readFileSync(keyPath),
+    cert: fs.readFileSync(certFile)
+  };
+}
 const BOOMERANG_BUILD_DIR = path.join(__dirname, "..", "build");
 const SPECULATION_TARGETS = [
   "/prerender/overview",
@@ -456,6 +470,13 @@ app.get("/boomerang-src.js", (_req, res) => {
 });
 
 // ─── Start ───────────────────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`\n  🚀 Boomerang Playground running at http://localhost:${PORT}\n`);
-});
+if (sslOptions) {
+  https.createServer(sslOptions, app).listen(PORT, () => {
+    console.log(`\n  🚀 Boomerang Playground running at https://localhost:${PORT}\n`);
+  });
+} else {
+  console.warn("⚠️  SSL certificates not found. Running over HTTP instead.");
+  app.listen(PORT, () => {
+    console.log(`\n  🚀 Boomerang Playground running at http://localhost:${PORT}\n`);
+  });
+}
