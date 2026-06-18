@@ -341,15 +341,61 @@ function renderPrerenderPage(pageName, runtimeConfig) {
     }
     a:hover { border-color: var(--accent); color: #a9b0ff; }
   </style>
-   <script id="performance-load">
-            window.addEventListener('load', function(e) {
-                window.BOOMR_onload = (e && e.timeStamp) || new Date().getTime()
-            }, false);
+  <script id="performance-load">
+  window.addEventListener('load', function (e) { window.BOOMR_onload = (e && e.timeStamp) || new Date().getTime() }, false);
 
-            window.BOOMR = window.BOOMR || {};
-            if (window.performance && performance.mark)
-                performance.mark('TTP');
-   </script>
+  window.BOOMR = window.BOOMR || {};
+  window.BOOMR.snippetExecuted = true;
+  if (window.performance && performance.mark) performance.mark('TTP');
+
+  function SSR_PERFORMANCE_MEASUREMENT(e) {
+    try {
+        e.onload = undefined;
+        if (
+            e.complete &&
+            window.performance &&
+            typeof window.performance.getEntriesByName == 'function' &&
+            window.performance.getEntriesByName(e.src)
+        ) {
+            window.ssrLoadedTimeStamp = window.performance.timing.navigationStart + window.performance.getEntriesByName(e.src)[0].responseEnd;
+        } else {
+            window.ssrLoadedTimeStamp = new Date().getTime();
+            if (window.performance && performance.mark) performance.mark('SSR Visually Complete');
+        }
+    } catch (e) {}
+  }
+
+  var injectSsrPerformanceInstrument = document.querySelector('[data-inject_ssr_performance_instrument]');
+
+  if (injectSsrPerformanceInstrument !== null) {
+    if (injectSsrPerformanceInstrument.complete) {
+      window.SSR_PERFORMANCE_MEASUREMENT(injectSsrPerformanceInstrument);
+    } else {
+        injectSsrPerformanceInstrument.addEventListener('load', window.SSR_PERFORMANCE_MEASUREMENT(injectSsrPerformanceInstrument));
+    }
+  } 
+
+  
+      (function(i,s,o,g,r,a,m){
+      i['InstanaEumObject']=r;
+      i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},
+      i[r].l=1*new Date();
+      a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];
+      a.async=1;
+      a.src=g;
+      m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//eum.instana.io/eum.min.js','ineum');
+      ineum('reportingUrl', "https://eum-eu-west-1.instana.io");
+      ineum('autoClearResourceTimings', false);
+      ineum('ignoreErrorMessages',[
+        /.*Failed to execute 'querySelector'.*/i,
+        /.*ResizeObserver loop limit exceeded.*/i
+      ]);
+      ineum('meta', 'userAgent', window.navigator.userAgent);
+      ineum('apiKey', "BDBM8oS7QzGntzAncTouGg");
+      ineum('page', "LandingApp_CategoryLandingPage");
+  </script>
 </head>
 <body>
   <h1>Prerender Target: ${prettyName}</h1>
