@@ -377,31 +377,6 @@ function renderPrerenderPage(pageName, runtimeConfig) {
   </script>
   ${localBoomerangScript}
   <script>
-    (function () {
-      var initialized = false;
-
-      function initIfAvailable() {
-        if (initialized || !window.BOOMR) return false;
-        BOOMR.init({
-          beacon_url: "/beacon",
-          instrument_xhr: true,
-          autorun: true,
-          ResourceTiming: { enabled: true, clearOnBeacon: false }
-        });
-        initialized = true;
-        return true;
-      }
-
-      if (!initIfAvailable()) {
-        var attempts = 0;
-        var timer = setInterval(function () {
-          attempts++;
-          if (initIfAvailable() || attempts >= 100) {
-            clearInterval(timer);
-          }
-        }, 100);
-      }
-    })();
 
     (function () {
       function updateDiagnostics() {
