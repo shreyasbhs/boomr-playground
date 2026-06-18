@@ -347,7 +347,6 @@ function renderPrerenderPage(pageName, runtimeConfig) {
             }, false);
 
             window.BOOMR = window.BOOMR || {};
-            window.BOOMR.snippetExecuted = true;
             if (window.performance && performance.mark)
                 performance.mark('TTP');
    </script>
