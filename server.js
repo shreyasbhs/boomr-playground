@@ -345,7 +345,6 @@ function renderPrerenderPage(pageName, runtimeConfig) {
   window.addEventListener('load', function (e) { window.BOOMR_onload = (e && e.timeStamp) || new Date().getTime() }, false);
 
   window.BOOMR = window.BOOMR || {};
-  window.BOOMR.snippetExecuted = true;
   if (window.performance && performance.mark) performance.mark('TTP');
 
   function SSR_PERFORMANCE_MEASUREMENT(e) {
