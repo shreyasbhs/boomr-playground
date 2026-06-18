@@ -341,6 +341,16 @@ function renderPrerenderPage(pageName, runtimeConfig) {
     }
     a:hover { border-color: var(--accent); color: #a9b0ff; }
   </style>
+   <script id="performance-load">
+            window.addEventListener('load', function(e) {
+                window.BOOMR_onload = (e && e.timeStamp) || new Date().getTime()
+            }, false);
+
+            window.BOOMR = window.BOOMR || {};
+            window.BOOMR.snippetExecuted = true;
+            if (window.performance && performance.mark)
+                performance.mark('TTP');
+   </script>
 </head>
 <body>
   <h1>Prerender Target: ${prettyName}</h1>
