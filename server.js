@@ -347,8 +347,11 @@ function renderPrerenderPage(pageName, runtimeConfig) {
   <script id="performance-load">
     
    window.BOOMR_config = window.BOOMR_config || {};
-   BOOMR_config.Early = {
-    enabled: true
+   window.BOOMR_config  = {
+    autorun: false,
+    Early: {
+      enabled: true
+    }
    };
 
   </script>
