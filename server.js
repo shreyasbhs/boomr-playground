@@ -348,7 +348,6 @@ function renderPrerenderPage(pageName, runtimeConfig) {
     
    window.BOOMR_config = window.BOOMR_config || {};
    window.BOOMR_config  = {
-    autorun: false,
     Early: {
       enabled: true
     }
