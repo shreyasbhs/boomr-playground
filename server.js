@@ -5,6 +5,12 @@ const https = require("https");
 
 const app = express();
 const PORT = process.env.PORT || 3456;
+const HTTP_PORT = process.env.HTTP_PORT || 3457;
+
+// Run both HTTP and HTTPS servers when enabled (e.g. BOTH=true / RUN_BOTH=true)
+const RUN_BOTH = /^(1|true|yes)$/i.test(
+  String(process.env.BOTH || process.env.RUN_BOTH || "")
+);
 
 // Load SSL certificates for HTTPS
 const certPath = path.join(__dirname, "certs");
@@ -341,19 +347,7 @@ function renderPrerenderPage(pageName, runtimeConfig) {
     }
     a:hover { border-color: var(--accent); color: #a9b0ff; }
   </style>
-  <script>
-     
-  </script>
-  <script id="performance-load">
-    
-   window.BOOMR_config = window.BOOMR_config || {};
-   window.BOOMR_config  = {
-    Early: {
-      enabled: true
-    }
-   };
-
-  </script>
+ 
 </head>
 <body>
   <h1>Prerender Target: ${prettyName}</h1>
@@ -458,13 +452,24 @@ app.get("/boomerang-src.js", (_req, res) => {
 });
 
 // ─── Start ───────────────────────────────────────────────────────────
+function startHttp(port) {
+  app.listen(port, () => {
+    console.log(`\n  🚀 Boomerang Playground running at http://localhost:${port}\n`);
+  });
+}
+
 if (sslOptions) {
   https.createServer(sslOptions, app).listen(PORT, () => {
     console.log(`\n  🚀 Boomerang Playground running at https://localhost:${PORT}\n`);
   });
+  if (RUN_BOTH) {
+    startHttp(HTTP_PORT);
+  }
 } else {
-  console.warn("⚠️  SSL certificates not found. Running over HTTP instead.");
-  app.listen(PORT, () => {
-    console.log(`\n  🚀 Boomerang Playground running at http://localhost:${PORT}\n`);
-  });
+  if (RUN_BOTH) {
+    console.warn("⚠️  SSL certificates not found. Running over HTTP only.");
+  } else {
+    console.warn("⚠️  SSL certificates not found. Running over HTTP instead.");
+  }
+  startHttp(PORT);
 }
