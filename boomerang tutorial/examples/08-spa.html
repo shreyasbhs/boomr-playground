@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Boomerang Tutorial — 08 XHR & SPA</title>
+</head>
+<body>
+  <h1>Lesson 8: XHR & Single Page App beacons</h1>
+  <p>Open DevTools → Console, then click the buttons. Each route change / fetch
+     produces its own beacon.</p>
+
+  <nav>
+    <button id="go-home">Home</button>
+    <button id="go-products">Products</button>
+    <button id="go-about">About</button>
+    <button id="fetch-data">Fetch data (XHR/fetch beacon)</button>
+  </nav>
+  <div id="view">Home</div>
+
+  <script src="../../boomerang.js"></script>
+  <script src="../../plugins/auto-xhr.js"></script>
+  <script src="../../plugins/spa.js"></script>
+  <script src="../../plugins/history.js"></script>
+  <script src="../../plugins/rt.js"></script>
+  <script src="../../plugins/navtiming.js"></script>
+  <script>
+    BOOMR.subscribe("before_beacon", function (data) {
+      console.log("BEACON [", data["http.initiator"] || "page-load", "] url:",
+                  data.u, "t_done:", data.t_done);
+    });
+    BOOMR.subscribe("spa_navigation", function () {
+      console.log("spa_navigation ->", location.pathname);
+    });
+
+    BOOMR.init({
+      beacon_url: "/beacon",
+      instrument_xhr: true,
+      AutoXHR: { monitorFetch: true, alwaysSendXhr: true },
+      History: { enabled: true, auto: true }
+    });
+
+    function navigate(path, label) {
+      history.pushState({}, "", path);
+      document.getElementById("view").textContent = label;
+    }
+    document.getElementById("go-home").onclick = function () { navigate("/", "Home"); };
+    document.getElementById("go-products").onclick = function () { navigate("/products", "Products"); };
+    document.getElementById("go-about").onclick = function () { navigate("/about", "About"); };
+    document.getElementById("fetch-data").onclick = function () {
+      // Same-origin fetch; the beacon will be http.initiator=xhr
+      fetch("/beacon?probe=1").catch(function () {});
+    };
+  </script>
+</body>
+</html>

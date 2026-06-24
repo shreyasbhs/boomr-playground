@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Boomerang Tutorial — 11 Custom plugin</title>
+</head>
+<body>
+  <h1>Lesson 11: Your own plugin (PageInfo)</h1>
+  <p>Open DevTools → Console and look for <code>page.scheme</code>,
+     <code>page.imgs</code>, <code>page.vw</code>, <code>page.vh</code>.</p>
+  <img src="https://via.placeholder.com/120?_=1" alt="" />
+  <img src="https://via.placeholder.com/120?_=2" alt="" />
+
+  <script src="../../../boomerang.js"></script>
+  <script src="../../../plugins/rt.js"></script>
+  <script src="../../../plugins/navtiming.js"></script>
+  <!-- our custom plugin loads after boomerang.js, like any plugin -->
+  <script src="./boomerang.scheme-plugin.js"></script>
+  <script>
+    BOOMR.subscribe("before_beacon", function (data) {
+      console.log("PageInfo vars:", {
+        scheme: data["page.scheme"],
+        imgs: data["page.imgs"],
+        vw: data["page.vw"],
+        vh: data["page.vh"]
+      });
+    });
+
+    BOOMR.init({
+      beacon_url: "/beacon",
+      autorun: true,
+      PageInfo: { prefix: "page", countImages: true }
+    });
+  </script>
+</body>
+</html>

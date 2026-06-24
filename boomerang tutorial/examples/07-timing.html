@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Boomerang Tutorial — 07 Timing plugins</title>
+</head>
+<body>
+  <h1>Lesson 7: NavigationTiming, PaintTiming, ResourceTiming</h1>
+  <p>Open DevTools → Console. Serve over http:// (not file://) for best results.</p>
+
+  <!-- Some resources so ResourceTiming has data to capture -->
+  <img src="https://via.placeholder.com/200?_=1" alt="" />
+  <img src="https://via.placeholder.com/200?_=2" alt="" />
+  <img src="https://via.placeholder.com/200?_=3" alt="" />
+
+  <script src="../../boomerang.js"></script>
+  <script src="../../plugins/rt.js"></script>
+  <script src="../../plugins/navtiming.js"></script>
+  <script src="../../plugins/painttiming.js"></script>
+  <script src="../../node_modules/usertiming-compression/dist/usertiming-compression.vanilla.js"></script>
+  <script src="../../plugins/compression.js"></script>
+  <script src="../../plugins/restiming.js"></script>
+  <script>
+    BOOMR.subscribe("before_beacon", function (data) {
+      console.log("First Contentful Paint pt.fcp:", data["pt.fcp"]);
+      console.log("Largest Contentful Paint pt.lcp:", data["pt.lcp"]);
+      if (data.nt_dns_st != null) {
+        console.log("DNS:", data.nt_dns_end - data.nt_dns_st, "ms");
+        console.log("TCP connect:", data.nt_con_end - data.nt_con_st, "ms");
+        console.log("TTFB-ish:", data.nt_res_st - data.nt_req_st, "ms");
+      }
+      console.log("restiming length (compressed bytes):",
+                  (data.restiming || "").length);
+    });
+
+    BOOMR.init({
+      beacon_url: "/beacon",
+      autorun: true,
+      ResourceTiming: { enabled: true, clearOnBeacon: true }
+    });
+  </script>
+</body>
+</html>

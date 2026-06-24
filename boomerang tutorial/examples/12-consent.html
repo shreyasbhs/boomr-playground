@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Boomerang Tutorial — 12 Consent (opt-in / opt-out)</title>
+  <style>
+    #banner { position: fixed; bottom: 0; left: 0; right: 0; background: #222;
+              color: #fff; padding: 12px; font-family: sans-serif; }
+    button { margin: 0 6px; }
+    #log { font-family: monospace; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h1>Lesson 12: Consent-driven opt-in / opt-out (stubbed)</h1>
+  <p>This page <b>stubs</b> the Consent Inlined Plugin so you can follow the flow
+     without the real minified plugin. Open DevTools → Console too.</p>
+  <div id="log"></div>
+
+  <div id="banner">
+    We use performance cookies.
+    <button id="opt-in">Opt In</button>
+    <button id="opt-out">Opt Out</button>
+  </div>
+
+  <!-- ===== STUB consent helpers (replace with real ConsentInlinedPlugin) ===== -->
+  <script>
+    // Simulate optInRequired mode: hold beacons until opt-in.
+    window.__consent = (function () {
+      return document.cookie.indexOf("BOOMR_CONSENT=opted-in") !== -1
+        ? "in"
+        : (document.cookie.indexOf("BOOMR_CONSENT=opted-out") !== -1 ? "out" : "unknown");
+    })();
+
+    function log(msg) {
+      document.getElementById("log").textContent += msg + "\n";
+      console.log(msg);
+    }
+
+    window.BOOMR_OPT_IN = function () {
+      document.cookie = "BOOMR_CONSENT=opted-in; max-age=31536000; path=/";
+      window.__consent = "in";
+      log("OPT-IN: beacons allowed (BOOMR_CONSENT=opted-in)");
+      if (window.BOOMR && BOOMR.sendBeacon) { BOOMR.addVar("cip.in", 1); BOOMR.sendBeacon(); }
+    };
+    window.BOOMR_OPT_OUT = function () {
+      document.cookie = "BOOMR_CONSENT=opted-out; max-age=31536000; path=/";
+      // delete RT and BA cookies
+      document.cookie = "RT=; max-age=0; path=/";
+      document.cookie = "BA=; max-age=0; path=/";
+      window.__consent = "out";
+      log("OPT-OUT: beacons stopped, RT/BA cleared (BOOMR_CONSENT=opted-out)");
+      if (window.BOOMR && BOOMR.disable) { BOOMR.disable(); }
+    };
+  </script>
+
+  <script src="../../boomerang.js"></script>
+  <script src="../../plugins/rt.js"></script>
+  <script src="../../plugins/navtiming.js"></script>
+  <script>
+    BOOMR.subscribe("before_beacon", function (data) {
+      if (window.__consent !== "in") {
+        log("(beacon suppressed: no opt-in yet)");
+        // In the real ConsentInlinedPlugin with optInRequired, the beacon is held.
+        // Here we just note it; opt-in will trigger a fresh sendBeacon.
+        return;
+      }
+      log("BEACON sent. t_done=" + data.t_done + " cip.in=" + data["cip.in"]);
+    });
+
+    BOOMR.init({ beacon_url: "/beacon", autorun: true });
+
+    document.getElementById("opt-in").onclick = window.BOOMR_OPT_IN;
+    document.getElementById("opt-out").onclick = window.BOOMR_OPT_OUT;
+
+    log("Initial consent state: " + window.__consent);
+  </script>
+</body>
+</html>

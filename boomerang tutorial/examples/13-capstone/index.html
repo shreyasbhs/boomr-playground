@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Boomerang Tutorial — 13 Capstone</title>
+  <style>
+    body { font-family: sans-serif; max-width: 720px; margin: 2rem auto; }
+    button { margin: 4px; padding: 6px 10px; }
+    #view { padding: 1rem; border: 1px solid #ccc; margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Capstone: a tiny RUM-instrumented store</h1>
+  <p>Watch the server terminal and visit <a href="/report">/report</a> after
+     clicking around. (Console also logs each beacon.)</p>
+
+  <nav>
+    <button id="go-home">Home</button>
+    <button id="go-products">Products route (SPA)</button>
+    <button id="go-product">Product detail (SPA)</button>
+    <button id="fetch">Load products (fetch)</button>
+    <button id="break">Break it (error)</button>
+  </nav>
+  <div id="view">Home</div>
+
+  <!--
+    For the tutorial this uses the source plugins (served from the repo root) so
+    it runs without a build. In a real deployment, replace these with your single
+    built bundle: <script src="/build/boomerang-<version>.min.js"></script>
+  -->
+  <script src="/boomerang.js"></script>
+  <script src="/plugins/auto-xhr.js"></script>
+  <script src="/plugins/spa.js"></script>
+  <script src="/plugins/history.js"></script>
+  <script src="/plugins/rt.js"></script>
+  <script src="/plugins/painttiming.js"></script>
+  <script src="/plugins/navtiming.js"></script>
+  <script src="/node_modules/usertiming-compression/dist/usertiming-compression.vanilla.js"></script>
+  <script src="/plugins/compression.js"></script>
+  <script src="/plugins/restiming.js"></script>
+  <script src="/plugins/errors.js"></script>
+  <script>
+    BOOMR.subscribe("before_beacon", function (data) {
+      console.log("BEACON", data["http.initiator"] || "page-load",
+                  "pg:", data.page_group, "t_done:", data.t_done,
+                  "err:", !!data.err);
+    });
+
+    BOOMR.subscribe("spa_navigation", function () {
+      var pg = location.pathname.replace(/\//g, "") || "home";
+      BOOMR.addVar("page_group", pg);
+    });
+
+    BOOMR.init({
+      beacon_url: "/beacon",
+      instrument_xhr: true,
+      AutoXHR: { monitorFetch: true, alwaysSendXhr: true },
+      History: { enabled: true, auto: true },
+      Errors: { enabled: true },
+      ResourceTiming: { enabled: true, clearOnBeacon: true }
+    });
+
+    BOOMR.addVar({ build_id: "2024.06.1", page_group: "home" });
+
+    function navigate(path, label) {
+      history.pushState({}, "", path);
+      document.getElementById("view").textContent = label;
+    }
+    document.getElementById("go-home").onclick = function () { navigate("/", "Home"); };
+    document.getElementById("go-products").onclick = function () { navigate("/products", "Products"); };
+    document.getElementById("go-product").onclick = function () { navigate("/product/42", "Product 42"); };
+    document.getElementById("fetch").onclick = function () {
+      fetch("/api/products").then(function (r) { return r.json(); })
+        .then(function (p) { document.getElementById("view").textContent = JSON.stringify(p); })
+        .catch(function () {});
+    };
+    document.getElementById("break").onclick = function () {
+      null.boom();  // uncaught error -> captured by Errors plugin
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Boomerang Tutorial — 01 Basic</title>
+</head>
+<body>
+  <h1>Lesson 2: Basic synchronous Boomerang</h1>
+  <p>Open DevTools → Console to see the beacon, and Network (filter: beacon) to
+     see the request fire.</p>
+
+  <!-- Paths assume you serve the repo root, e.g. `npx serve` from the repo root,
+       then open /boomerang%20tutorial/examples/01-basic.html -->
+  <script src="../../boomerang.js"></script>
+  <script src="../../plugins/rt.js"></script>
+  <script src="../../plugins/navtiming.js"></script>
+  <script>
+    // Log every beacon before it is sent
+    BOOMR.subscribe("before_beacon", function (data) {
+      console.log("Beacon about to be sent:", data);
+      console.log("Page load time t_done =", data.t_done, "ms");
+    });
+
+    BOOMR.init({
+      // A harmless endpoint; the request may 404 but you can still see it fire
+      beacon_url: "/beacon",
+      autorun: true
+    });
+  </script>
+</body>
+</html>

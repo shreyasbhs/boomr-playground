@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Boomerang Tutorial — 06 RT custom timers</title>
+</head>
+<body>
+  <h1>Lesson 6: RT page-load timing & custom timers</h1>
+  <p>Open DevTools → Console. Look for <code>t_other</code> on the beacon.</p>
+
+  <script src="../../boomerang.js"></script>
+  <script src="../../plugins/rt.js"></script>
+  <script src="../../plugins/navtiming.js"></script>
+  <script>
+    BOOMR.subscribe("before_beacon", function (data) {
+      console.log("t_done:", data.t_done, "t_resp:", data.t_resp,
+                  "t_page:", data.t_page);
+      console.log("t_other (custom timers):", data.t_other);
+    });
+
+    // 1) startTimer/endTimer around synchronous work
+    BOOMR.plugins.RT.startTimer("sync_work");
+    var sum = 0;
+    for (var i = 0; i < 5e5; i++) { sum += i; }
+    BOOMR.plugins.RT.endTimer("sync_work");
+
+    // 2) setTimer with a known value
+    BOOMR.plugins.RT.setTimer("server_render", 123);
+
+    // 3) Time an image load (must finish before page_ready to ride the beacon)
+    BOOMR.plugins.RT.startTimer("hero_image");
+    var img = new Image();
+    img.onload = img.onerror = function () {
+      BOOMR.plugins.RT.endTimer("hero_image");
+    };
+    img.src = "https://via.placeholder.com/600x400?_=" + Date.now();
+
+    BOOMR.init({ beacon_url: "/beacon", autorun: true });
+  </script>
+</body>
+</html>

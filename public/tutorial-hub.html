@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boomerang Step-by-Step Tutorial</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 60px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 4px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #4ade80;
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+        }
+
+        .card-number {
+            font-size: 0.85em;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .card-title {
+            font-size: 1.25em;
+            font-weight: 600;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .card-description {
+            color: #666;
+            margin-bottom: 15px;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        .card-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85em;
+            color: #999;
+        }
+
+        .difficulty {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #f0f0f0;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 500;
+        }
+
+        .difficulty.beginner { background: #d4edda; color: #155724; }
+        .difficulty.intermediate { background: #fff3cd; color: #856404; }
+        .difficulty.advanced { background: #f8d7da; color: #721c24; }
+
+        .card-link {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+
+        .card-link:hover {
+            background: #764ba2;
+        }
+
+        .info-boxes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .info-box {
+            background: rgba(255,255,255,0.15);
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            padding: 20px;
+            color: white;
+            backdrop-filter: blur(10px);
+        }
+
+        .info-box h3 {
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .info-box p {
+            opacity: 0.95;
+            line-height: 1.5;
+        }
+
+        .section {
+            margin-bottom: 50px;
+        }
+
+        .section-title {
+            color: white;
+            font-size: 1.5em;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::before {
+            content: '';
+            display: block;
+            width: 4px;
+            height: 24px;
+            background: white;
+            border-radius: 2px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+
+        .back-link:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .info-boxes {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-link">← Back to Playground</a>
+
+        <div class="header">
+            <h1>📖 Boomerang Step-by-Step Tutorial</h1>
+            <p>Master Real User Monitoring (RUM) from fundamentals to advanced techniques</p>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <!-- Beginner Section -->
+        <div class="section">
+            <div class="section-title">🎯 Foundations (Getting Started)</div>
+            <div class="grid">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-number">Lesson 1</div>
+                        <div class="card-title">What is RUM & Boomerang?</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-description">Learn the fundamentals of Real User Monitoring, the Observer Effect, and what Boomerang can measure.</div>
+                        <div class="card-meta">
+                            <span class="difficulty beginner">Beginner</span>
+                            <span>15 min</span>
+                        </div>
+                        <a href="../boomerang%20tutorial/lesson-01-what-is-rum-and-boomerang.md" class="card-link">Start →</a>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-number">Lesson 2</div>
+                        <div class="card-title">Getting Started: Synchronous Include</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-description">Your first Boomerang integration using synchronous script loading.</div>
+                        <div class="card-meta">
+                            <span class="difficulty beginner">Beginner</span>
+                            <span>10 min</span>
+                        </div>
+                        <a href="../boomerang%20tutorial/lesson-02-getting-started.md" class="card-link">Start →</a>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-number">Lesson 3</div>
+                        <div class="card-title">Async Loading & Loader Snippet</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-description">Non-blocking Boomerang initialization using the loader snippet pattern.</div>
+                        <div class="card-meta">
+                            <span class="difficulty beginner">Beginner</span>
+                            <span>15 min</span>
+                        </div>
+                        <a href="../boomerang%20tutorial/lesson-03-async-loading.md" class="card-link">Start →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Core Concepts Section -->
+        <div class="section">
+            <div class="section-title">⚙️ Core Concepts</div>
+            <div class="grid">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-number">Lesson 4</div>
+                        <div class="card-title">Plugins & Building with Grunt</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-description">Understand the plugin architecture and how to build custom Boomerang flavors.</div>
+                        <div class="card-meta">
+                            <span class="difficulty intermediate">Intermediate</span>
+                            <span>20 min</span>
+                        </div>
+                        <a href="../boomerang%20tutorial/lesson-04-plugins-and-building.md" class="card-link">Start →</a>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-number">Lesson 5</div>
+                        <div class="card-title">Core API & Beacon Anatomy</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-description">Master the BOOMR API: initialization, variables, events, and beacon structure.</div>
+                        <div class="card-meta">
+                            <span class="difficulty intermediate">Intermediate</span>
+                            <span>20 min</span>
+                        </div>
+                        <a href="../boomerang%20tutorial/lesson-05-core-api-and-beacon.md" class="card-link">Start →</a>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-number">Lesson 6</div>
+                        <div class="card-title">Page Load Timing (RT Plugin)</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-description">Measure page load with the RT (Round Trip) plugin and custom timers.</div>
+                        <div class="card-meta">
+                            <span class="difficulty intermediate">Intermediate</span>
+                            <span>15 min</span>
+                        </div>
+                        <a href="../boomerang%20tutorial/lesson-06-rt-page-load-timing.md" class="card-link">Start →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Metrics Section -->
+        <div class="section">
+            <div class="section-title">📊 Performance Metrics</div>
+            <div class="grid">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-number">Lesson 7</div>
+                        <div class="card-title">Navigation, Paint & Resource Timing</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-description">Capture browser timing data: NavigationTiming, PaintTiming, and ResourceTiming.</div>
+                        <div class="card-meta">
+                            <span class="difficulty intermediate">Intermediate</span>
+                            <span>20 min</span>
+                        </div>
+                        <a href="../boomerang%20tutorial/lesson-07-timing-plugins.md" class="card-link">Start →</a>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-number">Lesson 8</div>
+                        <div class="card-title">XHR & Single Page Apps</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-description">Track performance in dynamic applications with AutoXHR, SPA, and History plugins.</div>
+                        <div class="card-meta">
+                            <span class="difficulty intermediate">Intermediate</span>
+                            <span>25 min</span>
+                        </div>
+                        <a href="../boomerang%20tutorial/lesson-08-xhr-and-spa.md" class="card-link">Start →</a>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-number">Lesson 9</div>
+                        <div class="card-title">Errors & Custom Data</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-description">Capture errors, add custom metrics, and track user interactions.</div>
+                        <div class="card-meta">
+                            <span class="difficulty intermediate">Intermediate</span>
+                            <span>15 min</span>
+                        </div>
+                        <a href="../boomerang%20tutorial/lesson-09-errors-and-custom-data.md" class="card-link">Start →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Advanced Topics Section -->
+        <div class="section">
+            <div class="section-title">🔧 Advanced Topics</div>
+            <div class="grid">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-number">Lesson 10</div>
+                        <div class="card-title">Receiving & Reading Beacons</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-description">Set up a backend to receive, parse, and aggregate Boomerang beacons.</div>
+                        <div class="card-meta">
+                            <span class="difficulty advanced">Advanced</span>
+                            <span>25 min</span>
+                        </div>
+                        <a href="../boomerang%20tutorial/lesson-10-reading-beacons.md" class="card-link">Start →</a>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-number">Lesson 11</div>
+                        <div class="card-title">Writing Custom Plugins</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-description">Build your own plugin to extend Boomerang with custom measurements.</div>
+                        <div class="card-meta">
+                            <span class="difficulty advanced">Advanced</span>
+                            <span>30 min</span>
+                        </div>
+                        <a href="../boomerang%20tutorial/lesson-11-writing-a-plugin.md" class="card-link">Start →</a>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-number">Lesson 12</div>
+                        <div class="card-title">Privacy: Opt-In & Opt-Out</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-description">Implement GDPR/CCPA-compliant consent and privacy controls.</div>
+                        <div class="card-meta">
+                            <span class="difficulty advanced">Advanced</span>
+                            <span>20 min</span>
+                        </div>
+                        <a href="../boomerang%20tutorial/lesson-12-privacy-opt-in-out.md" class="card-link">Start →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Capstone Section -->
+        <div class="section">
+            <div class="section-title">🎓 Capstone Project</div>
+            <div class="grid">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-number">Lesson 13</div>
+                        <div class="card-title">Capstone: Building a Full RUM Implementation</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-description">Integrate everything you've learned into a complete real-world e-commerce application with analytics backend.</div>
+                        <div class="card-meta">
+                            <span class="difficulty advanced">Advanced</span>
+                            <span>45 min</span>
+                        </div>
+                        <a href="../boomerang%20tutorial/lesson-13-capstone-project.md" class="card-link">Start →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Boxes -->
+        <div class="info-boxes">
+            <div class="info-box">
+                <h3>📚 How to Use This Tutorial</h3>
+                <p>Work through lessons sequentially. Each includes concepts, working examples, and exercises. Run the interactive examples by opening them in a browser or running the included Node.js servers.</p>
+            </div>
+
+            <div class="info-box">
+                <h3>🚀 Quick Start</h3>
+                <p>Start with Lesson 1 to understand RUM concepts, then move to Lesson 2 for your first integration. Lessons 10+ require running backend servers.</p>
+            </div>
+
+            <div class="info-box">
+                <h3>💡 Pro Tips</h3>
+                <p>Open browser DevTools to inspect network requests and console output. Check the /boomerang%20tutorial/examples/ folder for runnable code samples.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Update progress bar based on scroll
+        function updateProgress() {
+            const cards = document.querySelectorAll('.card');
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollPercent = (scrollTop / docHeight) * 100;
+            document.getElementById('progressFill').style.width = Math.min(scrollPercent, 100) + '%';
+        }
+
+        window.addEventListener('scroll', updateProgress);
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

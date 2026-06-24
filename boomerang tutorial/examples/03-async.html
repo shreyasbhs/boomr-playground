@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Boomerang Tutorial — 03 Async loading</title>
+</head>
+<body>
+  <h1>Lesson 3: Asynchronous loading</h1>
+  <p>Open DevTools → Console. Throttle the network (Slow 3G) and notice the page
+     <code>load</code> event is not delayed by Boomerang.</p>
+
+  <script>
+    // Record when the page's own load event fires
+    window.addEventListener("load", function () {
+      console.log("page load fired at", Math.round(performance.now()), "ms");
+    });
+
+    // Notified when Boomerang has finished loading (works for async loads)
+    document.addEventListener("onBoomerangLoaded", function (e) {
+      var B = e.detail.BOOMR;
+      console.log("Boomerang ready. snippetMethod =", B.snippetMethod);
+      B.addVar("snippet_method", B.snippetMethod || "sync");
+
+      B.subscribe("before_beacon", function (data) {
+        console.log("Beacon:", data);
+      });
+
+      B.init({ beacon_url: "/beacon", autorun: true });
+    });
+  </script>
+
+  <!--
+    Simplified async loader pointing at the repo source for demo purposes.
+    In production use the full snippet from snippets/loader-snippet.js and
+    point BOOMR.url at your built boomerang-<version>.min.js on a CDN.
+  -->
+  <script>
+  (function () {
+    if (window.BOOMR && (window.BOOMR.version || window.BOOMR.snippetExecuted)) { return; }
+    window.BOOMR = window.BOOMR || {};
+    window.BOOMR.snippetStart = new Date().getTime();
+    window.BOOMR.snippetExecuted = true;
+    window.BOOMR.snippetMethod = "p";
+
+    // Inject boomerang.js + plugins asynchronously
+    var scripts = ["../../boomerang.js", "../../plugins/rt.js", "../../plugins/navtiming.js"];
+    var i = 0;
+    (function next() {
+      if (i >= scripts.length) { return; }
+      var s = document.createElement("script");
+      s.src = scripts[i++];
+      s.async = true;
+      s.onload = next; // load in order
+      document.head.appendChild(s);
+    })();
+  })();
+  </script>
+</body>
+</html>

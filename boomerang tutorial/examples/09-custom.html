@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Boomerang Tutorial — 09 Errors & custom data</title>
+</head>
+<body>
+  <h1>Lesson 9: Errors, custom data & custom events</h1>
+  <p>Open DevTools → Console.</p>
+  <button id="break">Throw an error</button>
+  <button id="manual">Send manual timer beacon</button>
+
+  <script src="../../boomerang.js"></script>
+  <script src="../../plugins/rt.js"></script>
+  <script src="../../plugins/navtiming.js"></script>
+  <script src="../../plugins/errors.js"></script>
+  <script>
+    BOOMR.subscribe("before_beacon", function (data) {
+      console.log("BEACON pg:", data["http.initiator"] || "page-load",
+                  "| build_id:", data.build_id,
+                  "| err present:", !!data.err);
+    });
+    BOOMR.subscribe("error", function (err) {
+      console.log("Captured error event:", err);
+    });
+
+    BOOMR.init({
+      beacon_url: "/beacon",
+      autorun: true,
+      Errors: { enabled: true }
+    });
+
+    // Business tagging
+    BOOMR.addVar({ build_id: "2024.06.1", page_group: "demo" });
+
+    // Custom timed event -> its own beacon, pg = "image-load"
+    var t = BOOMR.requestStart("image-load");
+    var img = new Image();
+    img.onload = img.onerror = function () { t.loaded(); };
+    img.src = "https://via.placeholder.com/300?_=" + Date.now();
+
+    document.getElementById("break").onclick = function () {
+      // Uncaught error captured by the Errors plugin
+      null.someProperty.fails();
+    };
+    document.getElementById("manual").onclick = function () {
+      // Fabricate a ~750ms event and beacon it immediately
+      BOOMR.responseEnd("manual-timer", BOOMR.now() - 750);
+    };
+  </script>
+</body>
+</html>

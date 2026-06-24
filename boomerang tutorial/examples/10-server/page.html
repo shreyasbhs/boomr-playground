@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Boomerang Tutorial — 10 Beacon server</title>
+</head>
+<body>
+  <h1>Lesson 10: Receiving beacons on a server</h1>
+  <p>This page is served by <code>server.js</code>. Watch the terminal running
+     the server to see beacons arrive. Paths below are absolute because the
+     server serves static files from the repo root.</p>
+
+  <script src="/boomerang.js"></script>
+  <script src="/plugins/rt.js"></script>
+  <script src="/plugins/navtiming.js"></script>
+  <script>
+    BOOMR.subscribe("before_beacon", function (data) {
+      // Scrub anything sensitive before it leaves the browser
+      if (data.u && data.u.indexOf("/private") !== -1) {
+        delete data.secret;
+      }
+    });
+
+    BOOMR.init({ beacon_url: "/beacon", autorun: true });
+
+    // Add a custom var the server can read
+    BOOMR.addVar("page_group", "server-demo");
+  </script>
+</body>
+</html>

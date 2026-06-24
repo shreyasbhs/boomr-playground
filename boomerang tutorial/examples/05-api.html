@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Boomerang Tutorial — 05 Core API</title>
+</head>
+<body>
+  <h1>Lesson 5: Core BOOMR API & the beacon</h1>
+  <p>Open DevTools → Console.</p>
+
+  <script src="../../boomerang.js"></script>
+  <script src="../../plugins/rt.js"></script>
+  <script src="../../plugins/navtiming.js"></script>
+  <script>
+    BOOMR.subscribe("before_beacon", function (data) {
+      console.log("before_beacon: t_done =", data.t_done, "ms; url =", data.u);
+      console.log("full beacon:", data);
+    });
+
+    BOOMR.subscribe("beacon", function () {
+      // Clear one-off data AFTER it was sent
+      BOOMR.removeVar("ab_bucket");
+    });
+
+    BOOMR.init({ beacon_url: "/beacon", autorun: true });
+
+    // Tag this page for an A/B test (single beacon only)
+    BOOMR.addVar("ab_bucket", Math.random() < 0.5 ? "a" : "b", true);
+
+    console.log("hasVar('ab_bucket') =", BOOMR.hasVar("ab_bucket"));
+
+    // Measure a synchronous loop with the high-res timer
+    var start = BOOMR.now();
+    for (var i = 0; i < 1e6; i++) { /* busy work */ }
+    BOOMR.addVar("loop_ms", Math.round(BOOMR.now() - start));
+  </script>
+</body>
+</html>
