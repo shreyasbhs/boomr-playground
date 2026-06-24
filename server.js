@@ -2,6 +2,7 @@ const express = require("express");
 const fs = require("fs");
 const path = require("path");
 const https = require("https");
+const { marked } = require("marked");
 
 const app = express();
 const PORT = process.env.PORT || 3456;
@@ -437,8 +438,139 @@ app.get("/prerender/:page", (req, res) => {
   res.send(renderPrerenderPage(page, buildRuntimeConfig(req)));
 });
 
+// ─── Markdown renderer ───────────────────────────────────────────────
+function renderMarkdownPage(markdownPath) {
+  const mdContent = fs.readFileSync(markdownPath, 'utf8');
+  const htmlContent = marked(mdContent);
+  const title = path.basename(markdownPath, '.md');
+  
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${title}</title>
+  <style>
+   * { margin: 0; padding: 0; box-sizing: border-box; }
+   body {
+     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+     background: #0f1419;
+     color: #e1e4ed;
+     line-height: 1.6;
+     padding: 40px 20px;
+   }
+   .container { max-width: 900px; margin: 0 auto; }
+   .back-link {
+     display: inline-block;
+     margin-bottom: 20px;
+     padding: 8px 16px;
+     background: #667eea;
+     color: white;
+     text-decoration: none;
+     border-radius: 4px;
+     font-weight: 500;
+     transition: background 0.3s;
+   }
+   .back-link:hover { background: #764ba2; }
+   .content {
+     background: #1c1f2e;
+     border: 1px solid #2a2d3e;
+     border-radius: 8px;
+     padding: 40px;
+   }
+   h1, h2, h3, h4, h5, h6 {
+     margin-top: 24px;
+     margin-bottom: 12px;
+     color: #fff;
+   }
+   h1 { font-size: 2em; margin-top: 0; }
+   h2 { font-size: 1.5em; border-bottom: 1px solid #2a2d3e; padding-bottom: 8px; }
+   h3 { font-size: 1.25em; }
+   p { margin-bottom: 16px; }
+   ul, ol { margin-left: 24px; margin-bottom: 16px; }
+   li { margin-bottom: 8px; }
+   code {
+     background: #0f1419;
+     border: 1px solid #2a2d3e;
+     border-radius: 3px;
+     padding: 2px 6px;
+     font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+     font-size: 0.9em;
+     color: #79c0ff;
+   }
+   pre {
+     background: #0f1419;
+     border: 1px solid #2a2d3e;
+     border-radius: 6px;
+     padding: 16px;
+     overflow-x: auto;
+     margin-bottom: 16px;
+   }
+   pre code {
+     background: none;
+     border: none;
+     padding: 0;
+     color: #79c0ff;
+   }
+   blockquote {
+     border-left: 4px solid #667eea;
+     padding-left: 16px;
+     margin-left: 0;
+     margin-bottom: 16px;
+     color: #8b8fa3;
+     font-style: italic;
+   }
+   a {
+     color: #79c0ff;
+     text-decoration: none;
+     border-bottom: 1px dotted #667eea;
+   }
+   a:hover { text-decoration: underline; }
+   table {
+     border-collapse: collapse;
+     width: 100%;
+     margin-bottom: 16px;
+   }
+   th, td {
+     border: 1px solid #2a2d3e;
+     padding: 8px 12px;
+     text-align: left;
+   }
+   th { background: #2a2d3e; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="container">
+   <a href="/tutorial-hub.html" class="back-link">← Back to Tutorial Hub</a>
+   <div class="content">
+     ${htmlContent}
+   </div>
+  </div>
+</body>
+</html>`;
+}
+
+// Serve markdown files as HTML
+app.get('/boomerang%20tutorial/*.md', (req, res) => {
+  const filePath = path.join(__dirname, 'boomerang tutorial', req.params[0] + '.md');
+  try {
+   if (!fs.existsSync(filePath)) {
+     res.status(404).send('Lesson not found');
+     return;
+   }
+   res.setHeader('Content-Type', 'text/html; charset=utf-8');
+   res.send(renderMarkdownPage(filePath));
+  } catch (err) {
+   console.error('Error rendering markdown:', err);
+   res.status(500).send('Error loading lesson');
+  }
+});
+
 // ─── Static files ────────────────────────────────────────────────────
 app.use(express.static(path.join(__dirname, "public")));
+
+// Serve tutorial files from root
+app.use("/boomerang%20tutorial", express.static(path.join(__dirname, "boomerang tutorial")));
 
 // Serve boomerang build from repo
 app.use("/boomerang", express.static(path.join(__dirname, "..", "build")));
